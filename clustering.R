@@ -76,14 +76,50 @@ k_means <- function(data, k, pca = FALSE) {
     }
   }
 
+  ## TSS = BSS + WSS
+  # set.seed(42)    # Set seed since kmeans uses a random start.
+  # fit <- k_means(data=iris2, 3)
+  # fit
+  # clusters <- fit[3]
+  # clusters
+
+  # Subtract each value from the grand mean and get the number of observations in each cluster.
+  data.cent <- scale(data, scale = FALSE)
+  nrows <- table(cluster_vec)
+
+  # TSS BSS WSS
+  (TSS <- sum(data.cent^2))
+  # [1] 681.3706
+  (WSS <- sapply(split(data, cluster_vec), function(x) sum(scale(x, scale = FALSE)^2)))
+  #        1        2        3
+  # 15.15100 39.82097 23.87947
+
+  total_w <- sum(WSS)
+  # 78.85567
+  (BSS <- TSS - sum(WSS))
+  # [1] 602.5192
+  # Compute BSS directly
+  gmeans <- sapply(split(data, cluster_vec), colMeans)
+  means <- colMeans(data)
+  (BSS <- sum(colSums((gmeans - means)^2) * nrows))
+  # [1] 602.5192
+
   result <- list(
     "Sizes" = sizes,
     "Cluster Means" = clusters,
     "Clustering Vector" = cluster_vec,
-    "Iterations" = iter
+    "Iterations" = iter,
+    "total within sum of squares" = total_w,
+    "WSS" = WSS,
+    "TSS" = TSS,
+    "BSS" = BSS
   )
+  # cc = cluster_vec
   return(result)
 }
+
+
+
 library(tidyverse)
 data(iris)
 iris2 <- iris %>%
@@ -97,10 +133,7 @@ k_means(data = iris2, k = 3)
 ## visualize results
 iris3 <- iris %>%
   select(Sepal.Length, Petal.Length)
-
 head(iris3)
-
-set.seed(78)
 result <- k_means(iris3, 3)
 result
 
@@ -114,37 +147,18 @@ iris3 %>%
   theme_bw() +
   labs(color = "Cluster")
 
-## TSS = BSS + WSS
-set.seed(42) # Set seed since kmeans uses a random start.
-fit <- kmeans(iris2, 3)
-clusters <- fit$cluster
-
-# Subtract each value from the grand mean and get the number of observations in each cluster.
-iris2.cent <- scale(iris2, scale = FALSE)
-nrows <- table(clusters)
-
-(TSS <- sum(iris2.cent^2))
-# [1] 681.3706
-(WSS <- sapply(split(iris2, clusters), function(x) sum(scale(x, scale = FALSE)^2)))
-#        1        2        3
-# 15.15100 39.82097 23.87947
-(BSS <- TSS - sum(WSS))
-# [1] 602.5192
-# Compute BSS directly
-gmeans <- sapply(split(iris2, clusters), colMeans)
-means <- colMeans(iris2)
-(BSS <- sum(colSums((gmeans - means)^2) * nrows))
-# [1] 602.5192
 
 
 ###### Elbow method
 # install.packages("purrr")
-# library(purrr)
-set.seed(123)
+library(purrr)
+# set.seed(123)
 
 # function to compute total within-cluster sum of square
 wss <- function(k) {
-  kmeans(iris2, k, nstart = 10)$tot.withinss
+  fit <- k_means(data = iris2, k)
+  clusters <- fit[5]
+  return(clusters[["total within sum of squares"]])
 }
 
 # Compute and plot wss for k = 1 to k = 15
