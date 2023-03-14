@@ -172,3 +172,46 @@ plot(k.values, wss_values,
   xlab = "Number of clusters K",
   ylab = "Total within-clusters sum of squares"
 )
+
+c1 <- list(c(0, 0), c(0, 1), c(2, 3))
+c2 <- list(c(3, 3), c(3, 4))
+n1 <- length(c1)
+n2 <- length(c2)
+
+
+
+c1[[2]][2]
+c2
+n1
+n2
+
+# A Score
+a_score_1 <- abs(c1[[1]][1] - c1[[2]][1]) + abs(c1[[1]][2] - c1[[2]][2])
+a_score_1
+# 1
+
+a_score_2 <- abs(c1[[1]][1] - c1[[3]][1]) + abs(c1[[1]][2] - c1[[3]][2])
+a_score_2
+# 5
+
+a_score <- (a_score_1 + a_score_2) / 2
+a_score
+# 3
+
+## B score
+b_score_1 <- abs(c1[[1]][1] - c2[[1]][1]) + abs(c1[[1]][2] - c2[[1]][2])
+b_score_1
+# 6
+
+b_score_2 <- abs(c1[[1]][1] - c2[[2]][1]) + abs(c1[[1]][2] - c2[[2]][2])
+b_score_2
+# 7
+
+b_score <- (b_score_1 + b_score_2) / 2
+b_score
+# 13/2
+
+## S score
+s_score <- (b_score - a_score) / pmax(a_score, b_score)
+s_score
+# 0.53
